@@ -1,11 +1,16 @@
 import m1graf2020.Exceptiongraf;
+import m1graf2020.Graf;
 
-public class ResidualNetwork extends FlowNetwork {
+public class ResidualNetwork extends Graf {
 
-    public ResidualNetwork() throws Exceptiongraf {
-    }
 
     public ResidualNetwork(String path) throws Exceptiongraf {
-        super(path);
+
+    }
+
+
+    public void GenerateResidualGraph(FlowNetwork f)
+    {
+
     }
 }
