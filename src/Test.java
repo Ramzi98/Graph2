@@ -7,5 +7,7 @@ public class Test {
 
         System.out.println("Nodes : "+g.getAllNodes());
         System.out.println("Edges : "+g.getAllEdges());
+        System.out.println("startnode : "+g.getStartNodeFlow());
+        System.out.println("stopnode : "+g.getEndNodeFlow());
     }
 }

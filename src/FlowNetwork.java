@@ -112,7 +112,11 @@ public class FlowNetwork extends Graf {
     {
         for (Node n : getAllNodes())
         {
-            if(n.getName().equals("s"))
+            if(n.getName() == null)
+            {
+                continue;
+            }
+            else if(n.getName().equals("s"))
             {
                 return n;
             }
@@ -124,7 +128,11 @@ public class FlowNetwork extends Graf {
     {
         for (Node n : getAllNodes())
         {
-            if(n.getName().equals("t"))
+            if(n.getName() == null)
+            {
+                continue;
+            }
+            else if(n.getName().equals("t"))
             {
                 return n;
             }
@@ -132,9 +140,28 @@ public class FlowNetwork extends Graf {
         return null;
     }
 
-    public void FlowGraph(ResidualNetwork f)
+    public void DottoFlowGraph(Graf g)
     {
 
     }
+
+    public void DottoResidualGraph(Graf g)
+    {
+
+    }
+
+    public void FlowGraftoDot(Graf g)
+    {
+
+    }
+
+    public void ResidualGraphtoDot(Graf g)
+    {
+
+    }
+
+
+
+
 
 }
