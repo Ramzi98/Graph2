@@ -1,11 +1,7 @@
 import m1graf2020.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class FlowNetwork extends Graf {
 
@@ -150,9 +146,30 @@ public class FlowNetwork extends Graf {
 
     }
 
-    public void FlowGraftoDot(Graf g)
-    {
+    // To complet
+    public String FlowGraftoDot(String name) throws IOException {
+        String dotStringGraph = "digraph "+name+" {\n";
+        dotStringGraph += "rankdir =\"LR\" ";
+        dotStringGraph +="label =\"(2)";
 
+        for (Map.Entry<Node, List<Node>> entry : getAdjList().entrySet()) {
+            int nodeFrom = entry.getKey().getId();
+            if(entry.getValue().size()==0)
+            {
+                dotStringGraph += " " + nodeFrom + ";\n";
+            }
+            else
+            {
+                Collections.sort(entry.getValue());
+                for (Node nod : entry.getValue()) {
+                    int nodeto = nod.getId();
+                    dotStringGraph += " " + nodeFrom + " -> " + nodeto + "; \n";
+                }
+            }
+        }
+
+        dotStringGraph += "}";
+        return  dotStringGraph;
     }
 
     public void ResidualGraphtoDot(Graf g)
