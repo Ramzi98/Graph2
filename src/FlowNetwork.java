@@ -2,10 +2,7 @@ import m1graf2020.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FlowNetwork extends Graf {
 
@@ -22,9 +19,7 @@ public class FlowNetwork extends Graf {
     }
 
     public FlowNetwork(String path) throws Exceptiongraf {
-
         setWeighted(true);
-
         int id_max = 2;
         List<String> list = new ArrayList<>();
         try {
@@ -160,8 +155,59 @@ public class FlowNetwork extends Graf {
 
     }
 
+    boolean bfs(int Graph[][], int s, int t, int p[]) {
+        int V = Graph.length;
+        boolean visited[] = new boolean[V];
+        for (int i = 0; i < V; ++i)
+            visited[i] = false;
 
+        LinkedList<Integer> queue = new LinkedList<Integer>();
+        queue.add(s);
+        visited[s] = true;
+        p[s] = -1;
 
+        while (queue.size() != 0) {
+            int u = queue.poll();
 
+            for (int v = 0; v < V; v++) {
+                if (visited[v] == false && Graph[u][v] > 0) {
+                    queue.add(v);
+                    p[v] = u;
+                    visited[v] = true;
+                }
+            }
+        }
 
+        return (visited[t] == true);
+    }
+
+    int fordFulkerson(int s, int t) {
+        int u, v;
+        int Graph[][] = this.toAdjMatrix();
+        int V = Graph.length;
+        int p[] = new int[V];
+
+        int max_flow = 0;
+
+        while (bfs(Graph, s, t, p)) {
+            int path_flow = Integer.MAX_VALUE;
+            for (v = t; v != s; v = p[v]) {
+                u = p[v];
+                path_flow = Math.min(path_flow, Graph[u][v]);
+            }
+
+            for (v = t; v != s; v = p[v]) {
+                u = p[v];
+                Graph[u][v] -= path_flow;
+                Graph[v][u] += path_flow;
+            }
+
+            // Adding the path flows
+            max_flow += path_flow;
+        }
+
+        return max_flow;
+    }
 }
+
+
