@@ -6,6 +6,8 @@ import m1graf2020.Node;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class FlowNetwork extends Graf {
@@ -15,7 +17,15 @@ public class FlowNetwork extends Graf {
     protected Map<Edge, List<Integer>> EdgesWeights = new HashMap();
     protected int label;
     protected String induced_graph;
-
+    private int[] parent; // Holds parent of a node when a path is found (filled by BFS)
+    private Queue<Integer> queue; // Queue of nodes to explore (BFS to FIFO queue)
+    private int noOfNodes; // The number of nodes of the given array
+    private boolean[] visited; // Keeps track of the nodes that has been visited
+    public int labels = 2;
+    List<ArrayList<Integer>> finalPath = new ArrayList<ArrayList<Integer>>();
+    // residualGraph[i][j] tells you if there's an edge between vertex i & j.
+    // 0 = no edge, positive number = capacity of that edge
+    public int[][] residualGraph;
     public FlowNetwork() throws Exceptiongraf {
         super(true);
         setWeighted(true);
@@ -108,113 +118,173 @@ public class FlowNetwork extends Graf {
         }
     }
 
-    boolean bfs(int rGraph[][], int s, int t, int parent[])
-    {
-        int V = rGraph.length;
-        // Create a visited array and mark all vertices as not
-        // visited
-        boolean visited[] = new boolean[V];
-        for(int i=0; i<V; ++i)
-            visited[i]=false;
+    public boolean bfs(int source, int sink, int[][] graph) {
+        // Mark all nodes as not visited
+        for (int vertex = 1; vertex < noOfNodes; vertex++) {
+            visited[vertex] = false;
+        }
 
-        // Create a queue, enqueue source vertex and mark
-        // source vertex as visited
-        LinkedList<Integer> queue = new LinkedList<Integer>();
-        queue.add(s);
-        visited[s] = true;
-        parent[s]=-1;
-        ArrayList<Integer> path = new ArrayList<>();
+        // Add the source node and marks it visited
+        queue.add(source);
+        visited[source] = true;
+        parent[source] = -1; // Source has no parent
 
-        // Standard BFS Loop
-        while (queue.size()!=0)
-        {
-            int u = queue.poll();
-            path.add(u);
-            for (int v=0; v<V; v++)
-            {
-                if (visited[v]==false && rGraph[u][v] > 0)
-                {
-                    queue.add(v);
-                    parent[v] = u;
-                    visited[v] = true;
+        // Standard Breadth First Search (BFS) loop
+        while (!queue.isEmpty()) {
+            // Return and remove the vertex from the front of the queue
+            int element = queue.remove();
+
+            // Visit all the adjacent nodes
+            for (int destination = 0; destination < noOfNodes; destination++) {
+                // Check if the u-v edge capacity > 0 and if a node is not already visited
+                if (graph[element][destination] > 0 && !visited[destination]) {
+                    parent[destination] = element;
+                    queue.add(destination);
+                    visited[destination] = true;
                 }
             }
         }
-        for (int i = 0 ; i< visited.length;i++)
-        {
-            System.out.println(visited[i]);
-        }
-
-        // If we reached sink in BFS starting from source, then
-        // return true, else false
-        return (visited[t] == true);
+        return (visited[sink]); // Return true if the sink node has been reached
     }
 
-    // Returns tne maximum flow from s to t in the given graph
-    int fordFulkerson(int graph[][])
-    {
+    /**
+     * Runs the algorithm and calculates the maximum possible flow of the
+     * given graph from source to the sink.
+     *
+     * @param graph  The given flow graph graph.
+     * @return int Returns the maximum possible flow of the given graph.
+     */
+    public int fordFulkerson(int[][] graph) throws IOException {
         int u, v;
-        int V = graph.length;
-        int s = this.getStartNodeFlow().getId()-1;
-        int t = this.getEndNodeFlow().getId()-1;
-        // Create a residual graph and fill the residual graph
-        // with given capacities in the original graph as
-        // residual capacities in residual graph
-
-        // Residual graph where rGraph[i][j] indicates
-        // residual capacity of edge from i to j (if there
-        // is an edge. If rGraph[i][j] is 0, then there is
-        // not)
-        int rGraph[][] = new int[V][V];
-
-        for (u = 0; u < V; u++)
-            for (v = 0; v < V; v++)
-                rGraph[u][v] = graph[u][v];
-
-        // This array is filled by BFS and to store path
-        int parent[] = new int[V];
-
-        int max_flow = 0;  // There is no flow initially
-
-        // Augment the flow while tere is path from source
-        // to sink
-        while (bfs(rGraph, s, t, parent))
-        {
-            // Find minimum residual capacity of the edhes
-            // along the path filled by BFS. Or we can say
-            // find the maximum flow through the path found.
-            int path_flow = Integer.MAX_VALUE;
-            for (v=t; v!=s; v=parent[v])
-            {
-                u = parent[v];
-                path_flow = Math.min(path_flow, rGraph[u][v]);
+        int source = this.getStartNodeFlow().getId()-1;
+        int sink = this.getEndNodeFlow().getId()-1;
+        int maximumFlow = 0; // Initialize the maximum possible flow to zero
+        this.noOfNodes = graph.length;
+        this.queue = new LinkedList<>();
+        parent = new int[noOfNodes];
+        visited = new boolean[noOfNodes];
+        residualGraph = new int[noOfNodes][noOfNodes];
+        // Initialize residual graph to be same as the original graph
+        for (u = 0; u < noOfNodes; u++) {
+            for (v = 0; v < noOfNodes; v++) {
+                residualGraph[u][v] = graph[u][v];
             }
-            for(int i = 0;i< parent.length;i++) {
-                //System.out.println(parent[i]);
-            }
-            // update residual capacities of the edges and
-            // reverse edges along the path
-            for (v=t; v != s; v=parent[v])
-            {
-                u = parent[v];
-                rGraph[u][v] -= path_flow;
-                rGraph[v][u] += path_flow;
-                for (int[] row : rGraph) {
-                    System.out.println(Arrays.toString(row));
-                }
-                System.out.println(path_flow);
-
-                System.out.println("\n");
-            }
-
-            // Add path flow to overall flow
-            max_flow += path_flow;
         }
 
-        // Return the overall flow
-        return max_flow;
+        // Augment the flow while there is path from source to sink
+        while (bfs(source, sink, residualGraph)) {
+
+            // Find bottleneck (minimum) by looping over path from BFS using parent[]
+            // array, so initially set it to the largest number possible.
+            int pathFlow = Integer.MAX_VALUE;
+            ArrayList<Integer> list = new ArrayList<>();
+            // Find the maximum flow through the path found
+            // Loop backward through the path using parent[] array
+            for (v = sink; v != source; v = parent[v]) {
+                u = parent[v]; // Holds the previous node in the path
+                // Minimum out of previous bottleneck & the capacity of the new edge
+                pathFlow = Math.min(pathFlow, residualGraph[u][v]);
+                list.add(u);
+            }
+            Collections.reverse(list);
+            list.add(sink);
+            finalPath.add(list);
+            // Update the residual graph capacities & reverse edges along the path
+            for (v = sink; v != source; v = parent[v]) {
+                u = parent[v];
+                residualGraph[u][v] -= pathFlow; // Back edge
+                residualGraph[v][u] += pathFlow; // Forward edge
+            }
+            for (int[] row : residualGraph)
+
+                // converting each row as string
+                // and then printing in a separate line
+                System.out.println(Arrays.toString(row));
+            // Add path flow to overall maximum flow
+            maximumFlow += pathFlow;
+            String str = this.ResidualGraphtoDot(residualGraph,pathFlow,list);
+            System.out.println(str);
+        }
+        // Return the overall maximum flow
+        return maximumFlow;
     }
 
+    /**
+     * This method validates the residual graph generated.
+     *
+     * @param sourceNode The source node of the given graph.
+     * @param sinkNode   The sink node of the given graph.
+     * @param matrix     The matrix of the given graph with the edges.
+     * @return boolean Returns true if the generated residual graph is valid.
+     */
+    public boolean validateEdges(int sourceNode, int sinkNode, int[][] matrix) {
+        int noOfCols = matrix[0].length; // Number of columns of the graph
+        int sumFromSource = 0;
+        int sumToSink = 0;
+        boolean valid = true; // Returns true if the given graph is valid
+
+        for (int i = 0; i < noOfCols; i++) {
+            sumFromSource += matrix[sourceNode][i]; // Sum of the edges from the source
+        }
+        for (int[] row : matrix) {
+            sumToSink += row[sinkNode]; // Sum of the edges to the sink
+        }
+
+        // If the sum of the edges from the source and to the sink are equal,
+        // then check if the edges from and to the other nodes are equal
+        if (sumFromSource == sumToSink) {
+            // Iterating through the number of nodes
+            for (int node = 0; node < noOfCols; node++) {
+                int sumFromNode = 0;
+                int sumToNode = 0;
+
+                // If the node is source or sink,
+                // then don't check if the edges to and from the node is equal
+                if (node != sourceNode && node != sinkNode) {
+                    for (int i = 0; i < noOfCols; i++) {
+                        sumFromNode += matrix[node][i];
+                    }
+                    for (int[] row : matrix) {
+                        sumToNode += row[node];
+                    }
+
+                    // If the edges from and to a given node is not equal,
+                    // then the graph is not valid
+                    if (!(sumFromNode == sumToNode)) {
+                        valid = false;
+                    }
+                }
+            }
+        } else {
+            valid = false;
+        }
+        return valid; // Returns true if the given graph is valid
+    }
+
+    /**
+     * This method converts the flow network into residual graph and prints the nodes
+     * and their respective capacities of the flow network.
+     *
+     * @param graph The flow network of the user given graph.
+     * @return int[][] Returns the residual graph of the user given graph.
+     */
+    public int[][] printResidual(int[][] graph) {
+        // Initialize a graph to hold the converted residual graph
+        int[][] finalResidual = new int[noOfNodes][noOfNodes];
+
+        // Iterating through the rows and columns of the flow network
+        for (int u = 0; u < noOfNodes; u++) {
+            for (int v = 0; v < noOfNodes; v++) {
+                if (graph[u][v] > residualGraph[u][v]) {
+                    // Capacities of the residual graph is the difference between the
+                    // capacities of the user given graph and the flow network
+                    finalResidual[u][v] = graph[u][v] - residualGraph[u][v];
+                } else
+                    finalResidual[u][v] = 0;
+            }
+        }
+        return finalResidual;
+    }
 
     public Node getStartNodeFlow()
     {
@@ -286,6 +356,7 @@ public class FlowNetwork extends Graf {
         return null;
     }
 
+
     public void DottoFlowGraph(Graf g)
     {
 
@@ -301,9 +372,50 @@ public class FlowNetwork extends Graf {
 
     }
 
-    public void ResidualGraphtoDot(Graf g)
+    public String ResidualGraphtoDot(int[][] mat,int capacity,ArrayList<Integer> list)
     {
+        Map<Node, List<Node>> adjList = new HashMap<>();
+        adjList = AdjmatrixtoAdjlist(mat);
+        String dotStringGraph = "digraph g {\n";
+        dotStringGraph += "rankdir=\"LR\";\n";
+        dotStringGraph += "label=\"("+ labels++ +") residual graph.\"\n";
+        dotStringGraph += "Augementing path : "+list+".\n";
+        dotStringGraph += "Residual capacity : "+capacity+"\";\n";
 
+        TreeMap<Node, List<Node>> sorted = new TreeMap<>(adjList);
+
+        int i =0,j=1;
+        for (Map.Entry<Node, List<Node>> entry : sorted.entrySet()) {
+            int nodeFrom = entry.getKey().getId();
+                Collections.sort(entry.getValue());
+                for (Node nod : entry.getValue()) {
+                    int nodeto = nod.getId();
+                            dotStringGraph += " " + (nodeFrom-1) + " -> " + (nodeto-1) + "[label=\""+mat[nodeFrom-1][nodeto-1]+"\"]; \n";
+                        }
+        }
+
+        dotStringGraph += "}";
+        return dotStringGraph;
+    }
+
+//,int label,int[] path,int capacity
+    public Map<Node, List<Node>> AdjmatrixtoAdjlist(int[][] mat)
+    {
+        Map<Node, List<Node>> adjList = new HashMap<>();
+
+        for (int i = 0 ; i < mat.length; i++) {
+            Node n = new Node(i+1);
+            List<Node> nodeList = new ArrayList<>();
+            for(int j= 0; j< mat.length; j++) {
+                if(mat[i][j] > 0) {
+                    Node n2 = new Node(j+1);
+                    if(!nodeList.contains(n2))
+                        nodeList.add(n2);
+                }
+                adjList.put(n,nodeList);
+            }
+        }
+        return adjList;
     }
 
 }
