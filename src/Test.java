@@ -2,14 +2,15 @@ import m1graf2020.Edge;
 import m1graf2020.Exceptiongraf;
 import m1graf2020.Graf;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 public class Test {
     public static void main(String[] args) throws Exceptiongraf {
         FlowNetwork g = new FlowNetwork("DOT\\dg.dot");
+        int[][] mat = g.toMatrix();
 
-        System.out.println("Nodes : "+g.getAllNodes());
-        System.out.println("Edges : "+g.getAllEdges());
-        System.out.println("startnode : "+g.getStartNodeFlow());
-        System.out.println("stopnode : "+g.getEndNodeFlow());
-        System.out.println("Max Flow: " + g.fordFulkerson(g.getStartNodeFlow().getId()-1,g.getEndNodeFlow().getId()-1));
+        System.out.println(g.fordFulkerson(mat));
     }
 }
