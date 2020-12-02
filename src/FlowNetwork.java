@@ -22,11 +22,10 @@ public class FlowNetwork extends Graf {
     public int labels = 1;
     List<ArrayList<Integer>> finalPath = new ArrayList<ArrayList<Integer>>();
     ArrayList<ArrayList<Integer>> paths = new ArrayList<>();
-    ArrayList<int[][]> rs_graphs = new ArrayList<>();
+    List<int[][]> rs_graphs = new ArrayList<>();
     ArrayList<Integer> path_flow = new ArrayList<>();
     int flow_id = 1;
     Map<ArrayList<Integer>,Integer> paths_cap = new HashMap<>();
-
 
     // residualGraph[i][j] tells you if there's an edge between vertex i & j.
     // 0 = no edge, positive number = capacity of that edge
@@ -209,11 +208,22 @@ public class FlowNetwork extends Graf {
             path_flow.add(pathFlow);
             paths.add(list);
             paths_cap.put(list,pathFlow);
-            rs_graphs.add(residualGraph);
+
+            int [][] g = new int[residualGraph.length][residualGraph.length];
+            for(int i=0;i<residualGraph.length;i++)
+            {
+                for(int j=0;j<residualGraph.length;j++)
+                {
+                    g[i][j]= residualGraph[i][j];
+                }
+            }
+
+            rs_graphs.add(g);
         }
         // Return the overall maximum flow
         return maximumFlow;
     }
+
 
     public Node getStartNodeFlow()
     {
@@ -360,7 +370,7 @@ public class FlowNetwork extends Graf {
 
                     if(trouve)
                     {
-                        dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\", penwidth="+ capacity +", color=\"bleu\"]; \n";
+                        dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\", penwidth=3, color=\"bleu\"]; \n";
                         trouve = false;
                     }
                     else
@@ -396,6 +406,8 @@ public class FlowNetwork extends Graf {
     }
 
     public void ford_fulkerson_execute(int[][] mat) throws IOException {
+
+
         int max = fordFulkerson(mat);
         String residual_graf;
 
@@ -424,32 +436,48 @@ public class FlowNetwork extends Graf {
 
 
 
+        for (int i =0;i<rs_graphs.size()-1;i++)
+        {
+            printResidualgrafInDot(rs_graphs.get(i),paths.get(i+1),path_flow.get(i+1));
+        }
         for (int i =0;i<rs_graphs.size();i++)
         {
-            printResidualGraf_Flow(rs_graphs.get(i),paths.get(i),path_flow.get(i));
+            printFlowgrafInDot(rs_graphs.get(i),paths.get(i),path_flow.get(i));
         }
+
+        //Print last residual
+        String last_residual = printLastResidual(rs_graphs.get(rs_graphs.size()-1));
+        System.out.println(last_residual);
+        File resudual2 = new File("DOT/residGraph"+(labels-1)+".dot");
+        FileWriter fw2 = new FileWriter(resudual2);
+        PrintWriter pw2 = new PrintWriter(fw2);
+        pw2.print(last_residual);
+        pw2.close();
 
 
         System.out.println("Max flow = "+max);
 
     }
-    public void printResidualGraf_Flow(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
+
+    public void printResidualgrafInDot(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
         String residual_graf;
+        residual_graf = this.ResidualGraphtoDot(mat,pathFlow,path);
+        System.out.println(residual_graf);
+
+        File resudual = new File("DOT/residGraph"+(labels-1)+".dot");
+        FileWriter fw2 = new FileWriter(resudual);
+        PrintWriter pw2 = new PrintWriter(fw2);
+        pw2.print(residual_graf);
+        pw2.close();
+    }
+    public void printFlowgrafInDot(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
         String Flow;
         int v = 0;
 
-        for (int[] row : residualGraph)
-        {
-            System.out.println(Arrays.toString(row));
-        }
-        residual_graf = this.ResidualGraphtoDot(residualGraph,pathFlow,path);
-        System.out.println(residual_graf);
         v += pathFlow;
         addvaluetoEdges(v,path);
         Flow = printflow(v,path);
         System.out.println(Flow);
-
-
 
         File flow = new File("DOT/flow"+(flow_id-1)+".dot");
         FileWriter fw1 = new FileWriter(flow);
@@ -457,11 +485,6 @@ public class FlowNetwork extends Graf {
         pw1.print(Flow);
         pw1.close();
 
-        File resudual = new File("DOT/residGraph"+(labels-1)+".dot");
-        FileWriter fw2 = new FileWriter(resudual);
-        PrintWriter pw2 = new PrintWriter(fw2);
-        pw2.print(residual_graf);
-        pw2.close();
     }
 
     public String printflow(int value,ArrayList<Integer> path)
@@ -609,6 +632,51 @@ public class FlowNetwork extends Graf {
 
             }
 
+        }
+
+        dotStringGraph += "}";
+        return dotStringGraph;
+    }
+
+    public String printLastResidual(int[][] mat)
+    {
+        Map<Node, List<Node>> adjList;
+        adjList = AdjmatrixtoAdjlist(mat);
+        int sink = this.getEndNodeFlow().getId();
+
+        String dotStringGraph = "digraph g {\n";
+        dotStringGraph += "rankdir=\"LR\";\n";
+        dotStringGraph += "label=\"("+ labels++ +") residual graph.\n";
+        dotStringGraph += "Augementing path: none.";
+        dotStringGraph += "Previous flow was maximum .\"";
+
+        TreeMap<Node, List<Node>> sorted = new TreeMap<>(adjList);
+
+        for (Map.Entry<Node, List<Node>> entry : sorted.entrySet()) {
+            int nodeFrom = entry.getKey().getId();
+            Collections.sort(entry.getValue());
+            for (Node nod : entry.getValue()) {
+                int nodeto = nod.getId();
+                String node_to ;
+                String node_from ;
+
+                if(nodeFrom == sink) { node_from = "t"; }
+                else if(nodeFrom == 1) { node_from = "s"; }
+                else {
+                    int nf = nodeFrom - 1;
+                    node_from = String.valueOf(nf);
+                }
+
+                if(nodeto == 1) { node_to = "s"; }
+                else if(nodeto == sink) { node_to = "t"; }
+                else {
+                    int nt = nodeto - 1;
+                    node_to = String.valueOf(nt);
+                }
+
+                dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\"]; \n";
+
+            }
         }
 
         dotStringGraph += "}";
