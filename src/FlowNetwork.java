@@ -647,7 +647,7 @@ public class FlowNetwork extends Graf {
         String dotStringGraph = "digraph g {\n";
         dotStringGraph += "rankdir=\"LR\";\n";
         dotStringGraph += "label=\"("+ labels++ +") residual graph.\n";
-        dotStringGraph += "Augementing path: none.";
+        dotStringGraph += "Augementing path: none.\n";
         dotStringGraph += "Previous flow was maximum .\"";
 
         TreeMap<Node, List<Node>> sorted = new TreeMap<>(adjList);
