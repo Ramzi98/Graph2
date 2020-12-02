@@ -550,7 +550,7 @@ public class FlowNetwork extends Graf {
 
             for (Edge es : edgeList) {
                 if ((es.getStartnode().getId() == e.getStartnode().getId()) && (es.getEndnode().getId() == e.getEndnode().getId())) {
-                    value_weight.set(1, v);
+                    value_weight.set(1, value_weight.get(1)+v);
                 }
             }
         }
