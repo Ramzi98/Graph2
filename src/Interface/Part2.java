@@ -12,6 +12,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static java.lang.Thread.sleep;
+
 public class Part2 extends JFrame {
     public static void main(String[] args) {
         Part2 frame = new Part2();
@@ -88,11 +90,12 @@ public class Part2 extends JFrame {
                     System.out.println(filename);
                     String name = filename.substring(0, filename.length() - 4);
                     DotFileToPDF1(name);
+                    sleep(500);
                     test.dispose();
                     Imageslider obj = new Imageslider();
                     obj.setVisible(true);
 
-                } catch (Exceptiongraf | IOException exceptiongraf) {
+                } catch (Exceptiongraf | IOException | InterruptedException exceptiongraf) {
                     exceptiongraf.printStackTrace();
                 }
             }
