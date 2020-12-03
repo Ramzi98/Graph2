@@ -1,3 +1,4 @@
+package Flow;
 
 import m1graf2020.Edge;
 import m1graf2020.Exceptiongraf;
@@ -22,10 +23,11 @@ public class FlowNetwork extends Graf {
     public int labels = 1;
     List<ArrayList<Integer>> finalPath = new ArrayList<ArrayList<Integer>>();
     ArrayList<ArrayList<Integer>> paths = new ArrayList<>();
-    List<int[][]> rs_graphs = new ArrayList<>();
+    ArrayList<int[][]> rs_graphs = new ArrayList<>();
     ArrayList<Integer> path_flow = new ArrayList<>();
     int flow_id = 1;
     Map<ArrayList<Integer>,Integer> paths_cap = new HashMap<>();
+
 
     // residualGraph[i][j] tells you if there's an edge between vertex i & j.
     // 0 = no edge, positive number = capacity of that edge
@@ -208,22 +210,11 @@ public class FlowNetwork extends Graf {
             path_flow.add(pathFlow);
             paths.add(list);
             paths_cap.put(list,pathFlow);
-
-            int [][] g = new int[residualGraph.length][residualGraph.length];
-            for(int i=0;i<residualGraph.length;i++)
-            {
-                for(int j=0;j<residualGraph.length;j++)
-                {
-                    g[i][j]= residualGraph[i][j];
-                }
-            }
-
-            rs_graphs.add(g);
+            rs_graphs.add(residualGraph);
         }
         // Return the overall maximum flow
         return maximumFlow;
     }
-
 
     public Node getStartNodeFlow()
     {
@@ -370,7 +361,7 @@ public class FlowNetwork extends Graf {
 
                     if(trouve)
                     {
-                        dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\", penwidth=3, color=\"bleu\"]; \n";
+                        dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\", penwidth="+ capacity +", color=\"bleu\"]; \n";
                         trouve = false;
                     }
                     else
@@ -406,15 +397,13 @@ public class FlowNetwork extends Graf {
     }
 
     public void ford_fulkerson_execute(int[][] mat) throws IOException {
-
-
         int max = fordFulkerson(mat);
         String residual_graf;
 
 
-        System.out.println("First InitFlow graph");
+        //System.out.println("First InitFlow graph");
         String First_Flow = printfirstflow();
-        System.out.println(First_Flow);
+        //System.out.println(First_Flow);
 
 
 
@@ -424,10 +413,10 @@ public class FlowNetwork extends Graf {
         pw1.print(First_Flow);
         pw1.close();
 
-        System.out.println("First resudual graph");
+        //System.out.println("First resudual graph");
 
         residual_graf = this.ResidualGraphtoDot(toMatrix(), path_flow.get(0), paths.get(0));
-        System.out.println(residual_graf);
+        //System.out.println(residual_graf);
         File resudual1 = new File("DOT/residGraph"+(labels-1)+".dot");
         FileWriter fw = new FileWriter(resudual1);
         PrintWriter pw = new PrintWriter(fw);
@@ -436,48 +425,32 @@ public class FlowNetwork extends Graf {
 
 
 
-        for (int i =0;i<rs_graphs.size()-1;i++)
-        {
-            printResidualgrafInDot(rs_graphs.get(i),paths.get(i+1),path_flow.get(i+1));
-        }
         for (int i =0;i<rs_graphs.size();i++)
         {
-            printFlowgrafInDot(rs_graphs.get(i),paths.get(i),path_flow.get(i));
+            printResidualGraf_Flow(rs_graphs.get(i),paths.get(i),path_flow.get(i));
         }
 
-        //Print last residual
-        String last_residual = printLastResidual(rs_graphs.get(rs_graphs.size()-1));
-        System.out.println(last_residual);
-        File resudual2 = new File("DOT/residGraph"+(labels-1)+".dot");
-        FileWriter fw2 = new FileWriter(resudual2);
-        PrintWriter pw2 = new PrintWriter(fw2);
-        pw2.print(last_residual);
-        pw2.close();
 
-
-        System.out.println("Max flow = "+max);
+        //System.out.println("Max flow = "+max);
 
     }
-
-    public void printResidualgrafInDot(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
+    public void printResidualGraf_Flow(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
         String residual_graf;
-        residual_graf = this.ResidualGraphtoDot(mat,pathFlow,path);
-        System.out.println(residual_graf);
-
-        File resudual = new File("DOT/residGraph"+(labels-1)+".dot");
-        FileWriter fw2 = new FileWriter(resudual);
-        PrintWriter pw2 = new PrintWriter(fw2);
-        pw2.print(residual_graf);
-        pw2.close();
-    }
-    public void printFlowgrafInDot(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
         String Flow;
         int v = 0;
 
+        for (int[] row : residualGraph)
+        {
+            //System.out.println(Arrays.toString(row));
+        }
+        residual_graf = this.ResidualGraphtoDot(residualGraph,pathFlow,path);
+        //System.out.println(residual_graf);
         v += pathFlow;
         addvaluetoEdges(v,path);
         Flow = printflow(v,path);
-        System.out.println(Flow);
+        //System.out.println(Flow);
+
+
 
         File flow = new File("DOT/flow"+(flow_id-1)+".dot");
         FileWriter fw1 = new FileWriter(flow);
@@ -485,6 +458,11 @@ public class FlowNetwork extends Graf {
         pw1.print(Flow);
         pw1.close();
 
+        File resudual = new File("DOT/residGraph"+(labels-1)+".dot");
+        FileWriter fw2 = new FileWriter(resudual);
+        PrintWriter pw2 = new PrintWriter(fw2);
+        pw2.print(residual_graf);
+        pw2.close();
     }
 
     public String printflow(int value,ArrayList<Integer> path)
