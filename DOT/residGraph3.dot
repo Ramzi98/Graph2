@@ -1,0 +1,17 @@
+digraph g {
+rankdir="LR";
+label="(3) residual graph.
+Augementing path: [s, 2, 4, t].
+Residual capacity : 6";
+ s -> 1 [label="4"]; 
+ 1 -> s [label="4"]; 
+ 1 -> 3 [label="2"]; 
+ 2 -> s [label="6"]; 
+ 2 -> 3 [label="10"]; 
+ 2 -> 4 [label="1", penwidth=6, color="bleu"]; 
+ 3 -> 1 [label="4"]; 
+ 3 -> 4 [label="3"]; 
+ 4 -> 2 [label="6"]; 
+ t -> 3 [label="4"]; 
+ t -> 4 [label="6"]; 
+}

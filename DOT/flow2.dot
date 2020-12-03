@@ -1,0 +1,12 @@
+digraph flow3 {
+rankdir="LR";
+label="(2) Flow induced from residual graph1. Value : 4."
+ s -> 1 [label="4/8"]; 
+ s -> 2 [label="6"]; 
+ 1 -> 3 [label="4/6"]; 
+ 2 -> 3 [label="10"]; 
+ 2 -> 4 [label="7"]; 
+ 3 -> 4 [label="3"]; 
+ 3 -> t [label="4/4"]; 
+ 4 -> t [label="6"]; 
+}
