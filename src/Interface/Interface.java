@@ -241,7 +241,7 @@ public class Interface extends JFrame {
 
                         if (checked) {
                             frame.dispose();
-                            graph.removeNode(Integer.parseInt(inputname.getText()));
+                            graph.removeNode(graph.getNode(Integer.parseInt(inputname.getText())));
                         }
                     }
                 });

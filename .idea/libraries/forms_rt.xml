@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="Graph">
+  <library name="forms_rt">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/src/Graph.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/Interface/forms_rt.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
