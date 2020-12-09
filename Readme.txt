@@ -9,9 +9,12 @@ Third-party libraries used : forms_rt.jar (Java swing library) , Graph.jar (PW2 
 To start the application you must do the following:
 
 1)  Decompress the Zip file of the application by a specific application (Winrar for example).
-Then navigate to the decompression folder after enter in /src directory and open a terminal in this location
+    Then navigate to the decompression folder after enter in \src directory and open a terminal in this location
 
-2)	Tape the make command in the terminal and the application will be launched (make should have been installed in your computer)
+2)  Tape the make command in the terminal and the application will be launched (make should have been installed in your computer)
 
-3)	Or you can open the project in the Intellij IDEA and make run part2.java and the application will be launched computer.
+3)  Or you can open the project in the Intellij IDEA and make run select.java and the application will be launched computer.
+
+4)  for usage you should import graph from dot file who is in \DOT directory of project
+    (add your dot files of graphs in this location)
 
