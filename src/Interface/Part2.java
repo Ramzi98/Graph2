@@ -104,6 +104,34 @@ public class Part2 extends JFrame {
     public void DotFileToPDF1(String graphname) throws IOException {
         try {
             File folder = new File("DOT\\");
+            File folderimg = new File("img\\");
+            File folderPDF = new File("PDF\\");
+            if(!folder.exists())
+            {
+                folder.mkdir();
+            }
+
+            if(!folderimg.exists())
+            {
+                folderimg.mkdir();
+            }
+            else {
+                for(File file : folderimg.listFiles()){
+                    file.delete();
+                }
+            }
+
+            if(!folderPDF.exists())
+            {
+                folderPDF.mkdir();
+            }
+            else {
+                for(File file : folderPDF.listFiles()){
+                    file.delete();
+                }
+            }
+
+
             File[] listOfFiles = folder.listFiles();
 
             for (File file : listOfFiles) {
