@@ -141,20 +141,15 @@ public class FlowNetwork extends Graf {
         for (int vertex = 1; vertex < noOfNodes; vertex++) {
             visited[vertex] = false;
         }
-
         // Add the source node and marks it visited
         queue.add(source);
         visited[source] = true;
-        parent[source] = -1; // Source has no parent
+        parent[source] = -1;
 
-        // Standard Breadth First Search (BFS) loop
         while (!queue.isEmpty()) {
-            // Return and remove the vertex from the front of the queue
             int element = queue.remove();
-
             // Visit all the adjacent nodes
             for (int destination = 0; destination < noOfNodes; destination++) {
-                // Check if the u-v edge capacity > 0 and if a node is not already visited
                 if (graph[element][destination] > 0 && !visited[destination]) {
                     parent[destination] = element;
                     queue.add(destination);
@@ -162,7 +157,8 @@ public class FlowNetwork extends Graf {
                 }
             }
         }
-        return (visited[sink]); // Return true if the sink node has been reached
+        return (visited[sink]);
+        // Return true when we arrive to sink node
     }
 
     /**
@@ -175,29 +171,25 @@ public class FlowNetwork extends Graf {
         int u, v;
         int source = this.getStartNodeFlow().getId()-1;
         int sink = this.getEndNodeFlow().getId()-1;
-        int maximumFlow = 0; // Initialize the maximum possible flow to zero
+        int maximumFlow = 0;
         this.noOfNodes = graph.length;
         this.queue = new LinkedList<>();
         parent = new int[noOfNodes];
         visited = new boolean[noOfNodes];
         residualGraph = new int[noOfNodes][noOfNodes];
-        // Initialize residual graph to be same as the original graph
+        // Initialisation of the residual graph with the graph
         for (u = 0; u < noOfNodes; u++) {
             for (v = 0; v < noOfNodes; v++) {
                 residualGraph[u][v] = graph[u][v];
             }
         }
-        // Augment the flow while there is path from source to sink
+        // Augmenting flow wehre we find path flow
         while (bfs(source, sink, residualGraph)) {
-            // Find bottleneck (minimum) by looping over path from BFS using parent[]
-            // array, so initially set it to the largest number possible.
             int pathFlow = Integer.MAX_VALUE;
             ArrayList<Integer> list = new ArrayList<>();
-            // Find the maximum flow through the path found
-            // Loop backward through the path using parent[] array
+            // Find the maximum flow in the path
             for (v = sink; v != source; v = parent[v]) {
-                u = parent[v]; // Holds the previous node in the path
-                // Minimum out of previous bottleneck & the capacity of the new edge
+                u = parent[v];
                 pathFlow = Math.min(pathFlow, residualGraph[u][v]);
                 list.add(u+1);
             }
@@ -207,14 +199,15 @@ public class FlowNetwork extends Graf {
             // Update the residual graph capacities & reverse edges along the path
             for (v = sink; v != source; v = parent[v]) {
                 u = parent[v];
-                residualGraph[u][v] -= pathFlow; // Back edge
-                residualGraph[v][u] += pathFlow; // Forward edge
+                residualGraph[u][v] -= pathFlow;
+                residualGraph[v][u] += pathFlow;
             }
             maximumFlow += pathFlow;
             path_flow.add(pathFlow);
             paths.add(list);
             paths_cap.put(list,pathFlow);
-            //Save the resudual graph
+
+            //Save the residual graph
             int [][] g = new int[residualGraph.length][residualGraph.length];
             for(int i=0;i<residualGraph.length;i++)
             {
@@ -225,7 +218,7 @@ public class FlowNetwork extends Graf {
             }
             rs_graphs.add(g);
         }
-        // Return the overall maximum flow
+        //Return the maximum flow
         return maximumFlow;
     }
 
@@ -390,7 +383,6 @@ public class FlowNetwork extends Graf {
         {
             printFlowgrafInDot(rs_graphs.get(i),paths.get(i),path_flow.get(i));
         }
-
         //Print last residual
         String last_residual = printLastResidual(rs_graphs.get(rs_graphs.size()-1));
         System.out.println(last_residual);
@@ -403,14 +395,12 @@ public class FlowNetwork extends Graf {
         //System.out.println("Max flow = "+max);
 
     }
-
     /**
      * This method to print an residual graph in dot file
      */
     public void printResidualgrafInDot(int[][] mat,ArrayList<Integer> path,int pathFlow) throws IOException {
         String residual_graf;
         residual_graf = this.ResidualGraphtoDot(mat,pathFlow,path);
-        //System.out.println(residual_graf);
 
         File resudual = new File("DOT/residGraph"+(labels-1)+".dot");
         FileWriter fw2 = new FileWriter(resudual);
@@ -426,16 +416,16 @@ public class FlowNetwork extends Graf {
 
         String Flow;
         int v = 0;
-
         v += pathFlow;
         v_flow += pathFlow;
+
         addvaluetoEdges(v,path);
         Flow = printflow(v_flow,path);
-        //System.out.println(Flow);
 
         File flow = new File("DOT/flow"+(flow_id-1)+".dot");
         FileWriter fw1 = new FileWriter(flow);
         PrintWriter pw1 = new PrintWriter(fw1);
+
         pw1.print(Flow);
         pw1.close();
     }
@@ -452,7 +442,6 @@ public class FlowNetwork extends Graf {
         String dotStringGraph = "digraph flow"+(flow_id)+" {\n";
         dotStringGraph += "rankdir=\"LR\";\n";
         dotStringGraph += "label=\"("+ flow_id++ +") Flow induced from residual graph"+(flow_id-2)+". Value : "+value+".\"\n";
-
         TreeMap<Node, List<Node>> sorted_adjlist = new TreeMap<>(adjList);
 
         for(int i=0;i<path.size()-1;i++)
@@ -466,7 +455,6 @@ public class FlowNetwork extends Graf {
                 int nodeto = nod.getId();
                 String node_to;
                 String node_from;
-
                 if (nodeFrom == sink) {
                     node_from = "t";
                 } else if (nodeFrom == 1) {
@@ -475,7 +463,6 @@ public class FlowNetwork extends Graf {
                     int nf = nodeFrom - 1;
                     node_from = String.valueOf(nf);
                 }
-
                 if (nodeto == 1) {
                     node_to = "s";
                 } else if (nodeto == sink) {
@@ -484,11 +471,9 @@ public class FlowNetwork extends Graf {
                     int nt = nodeto - 1;
                     node_to = String.valueOf(nt);
                 }
-
                 for (Edge e : getAllEdges()) {
 
                 }
-
                 int w = 0;
                 int v = 0;
                 for (Map.Entry<Edge, ArrayList<Integer>> el : EdgesWeights.entrySet()) {
@@ -499,17 +484,13 @@ public class FlowNetwork extends Graf {
                         w = value_weight.get(0);
                     }
                 }
-
                 if (v != 0) {
                     dotStringGraph += " " + node_from + " -> " + node_to + " [label=\"" + v + "/" + w + "\"]; \n";
                 } else {
                     dotStringGraph += " " + node_from + " -> " + node_to + " [label=\"" + w + "\"]; \n";
                 }
-
             }
-
         }
-
         dotStringGraph += "}";
         return dotStringGraph;
 
@@ -573,19 +554,15 @@ public class FlowNetwork extends Graf {
                     int nf = nodeFrom - 1;
                     node_from = String.valueOf(nf);
                 }
-
                 if(nodeto == 1) { node_to = "s"; }
                 else if(nodeto == sink) { node_to = "t"; }
                 else {
                     int nt = nodeto - 1;
                     node_to = String.valueOf(nt);
                 }
-
                 dotStringGraph += " " + node_from + " -> " + node_to + " [label=\""+mat[nodeFrom-1][nodeto-1]+"\"]; \n";
-
             }
         }
-
         dotStringGraph += "}";
         return dotStringGraph;
     }
